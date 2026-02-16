@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>WISE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              serif: ['"Times New Roman"', 'serif'],
+              sans: ['Poppins', 'sans-serif'],
+            },
+            colors: {
+              brand: {
+                purple: '#6B54A7',
+                white: '#FFFFFF',
+                pink: '#D0B9E2',
+                brightPink: '#F9A8D4',
+                black: '#141414',
+                gold: '#E9B96F',
+                grey: '#EFEFEF',
+                mint: '#BFD9CC',
+                sky: '#ACC2F4',
+              }
+            },
+            backgroundImage: {
+              'gradient-brand': 'linear-gradient(135deg, #6B54A7 0%, #D0B9E2 100%)',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body { background-color: #6B54A7; color: #FFFFFF; font-family: 'Poppins', sans-serif; }
+      h1, h2, h3, h4, .font-serif { font-family: 'Times New Roman', serif; color: #FFFFFF; }
+      ::-webkit-scrollbar { width: 4px; }
+      ::-webkit-scrollbar-track { background: #6B54A7; }
+      ::-webkit-scrollbar-thumb { background: #FFFFFF; border-radius: 10px; }
+      
+      .bg-brand-white-button { background-color: #FFFFFF; color: #141414; }
+      .text-brand-purple { color: #6B54A7; }
+      .text-brand-pink { color: #D0B9E2; }
+      .text-brand-brightPink { color: #F9A8D4; }
+      
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "jspdf": "https://esm.sh/jspdf@^3.0.4",
+    "recharts": "https://esm.sh/recharts@^3.6.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.89.0"
+  }
+}
+</script>
+</head>
+  <body class="antialiased selection:bg-brand-pink/30">
+    <div id="root"></div>
+  </body>
+</html>
