@@ -38,3 +38,12 @@ View your app in AI Studio: https://ai.studio/apps/drive/1N8nAt7DYclV0ya4T9VDe8I
    - `SUPABASE_ANON_KEY` — your Supabase anon/public key
    - `GEMINI_API_KEY` — your Gemini API key (if using AI features)
 5. Deploy. Vercel will run `npm run build` and serve the `dist` output.
+
+## Supabase database setup
+
+Create the tables and RLS policies in your Supabase project:
+
+1. Open [Supabase Dashboard](https://supabase.com/dashboard) → your project → **SQL Editor**.
+2. Copy the contents of `supabase/migrations/20250215000000_initial_schema.sql` and run it.
+
+This creates `profiles`, `survey_responses`, and `analysis_results` and enables the app to save/load profiles and survey results (linked by an anonymous id in the browser).

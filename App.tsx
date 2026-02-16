@@ -12,6 +12,7 @@ import { Membership } from './components/Membership';
 import { Logo } from './components/Logo';
 import { AppScreen, UserProfile, AnalysisResult } from './types';
 import { analyzeSymptoms } from './services/analysisEngine';
+import { getAnonymousId, loadProfile, saveProfile, saveSurveyAndAnalysis } from './services/db';
 import { 
   ShieldCheck, 
   ChevronRight, 
@@ -51,6 +52,7 @@ export const Tagline = ({ className = "" }: { className?: string }) => (
 const App: React.FC = () => {
   const [screen, setScreen] = useState<AppScreen>(AppScreen.ONBOARDING);
   const [profile, setProfile] = useState<UserProfile>(INITIAL_PROFILE);
+  const [profileId, setProfileId] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [verificationCode, setVerificationCode] = useState<string>('');
   const [showNotification, setShowNotification] = useState(false);
@@ -60,10 +62,19 @@ const App: React.FC = () => {
   const [surveyStep, setSurveyStep] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const anonId = getAnonymousId();
+      const saved = await loadProfile(anonId);
+      if (!cancelled && saved) setProfile(prev => ({ ...prev, ...saved }));
+    })();
     const timer = setTimeout(() => {
-      setIsInitializing(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+      if (!cancelled) setIsInitializing(false);
+    }, 800);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, []);
 
   const generateCode = () => {
@@ -99,6 +110,7 @@ const App: React.FC = () => {
     setSurveyAnswers(answers);
     const result = analyzeSymptoms(answers, profile, selectedDate);
     setAnalysis(result);
+    saveSurveyAndAnalysis(profileId, getAnonymousId(), answers, selectedDate, result);
     setScreen(AppScreen.RESULTS);
   };
 
@@ -263,7 +275,11 @@ const App: React.FC = () => {
           <Profile 
             profile={profile} 
             updateProfile={handleUpdateProfile} 
-            onComplete={() => setScreen(AppScreen.HOW_IT_WORKS)} 
+            onComplete={async () => {
+              const id = await saveProfile(getAnonymousId(), profile);
+              if (id) setProfileId(id);
+              setScreen(AppScreen.HOW_IT_WORKS);
+            }} 
             onAdminLogin={() => setScreen(AppScreen.ADMIN)}
           />
         );
