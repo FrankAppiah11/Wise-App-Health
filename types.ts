@@ -67,6 +67,7 @@ export interface EducationArticle {
 export enum AppScreen {
   ONBOARDING = 'ONBOARDING',
   SIGNUP = 'SIGNUP',
+  LOGIN = 'LOGIN',
   VERIFY_EMAIL = 'VERIFY_EMAIL',
   HOW_IT_WORKS = 'HOW_IT_WORKS',
   PROFILE = 'PROFILE',

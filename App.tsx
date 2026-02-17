@@ -8,6 +8,7 @@ import { Support } from './components/Support';
 import { AdminDashboard } from './components/AdminDashboard';
 import { SignUp } from './components/SignUp';
 import { EmailVerification } from './components/EmailVerification';
+import { LoginForm } from './components/auth/LoginForm';
 import { Membership } from './components/Membership';
 import { Logo } from './components/Logo';
 import { AppScreen, UserProfile, AnalysisResult } from './types';
@@ -25,8 +26,6 @@ import {
   CheckCircle, 
   Home, 
   ClipboardList, 
-  Sparkles,
-  Shield
 } from 'lucide-react';
 
 const INITIAL_PROFILE: UserProfile = {
@@ -54,8 +53,6 @@ const App: React.FC = () => {
   const [profile, setProfile] = useState<UserProfile>(INITIAL_PROFILE);
   const [profileId, setProfileId] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
-  const [verificationCode, setVerificationCode] = useState<string>('');
-  const [showNotification, setShowNotification] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
   
   const [surveyAnswers, setSurveyAnswers] = useState<Record<string, any>>({});
@@ -77,33 +74,21 @@ const App: React.FC = () => {
     };
   }, []);
 
-  const generateCode = () => {
-    const code = Math.floor(1000 + Math.random() * 9000).toString();
-    setVerificationCode(code);
-    
-    setTimeout(() => {
-      setShowNotification(true);
-      setTimeout(() => setShowNotification(false), 8000);
-    }, 1500);
-  };
-
   const handleUpdateProfile = (updates: Partial<UserProfile>) => {
     setProfile(prev => ({ ...prev, ...updates }));
   };
 
   const handleSignUp = (name: string, email: string, phone: string) => {
     setProfile(prev => ({ ...prev, name, email, phone }));
-    generateCode();
     setScreen(AppScreen.VERIFY_EMAIL);
   };
 
   const handleVerified = () => {
     setScreen(AppScreen.PROFILE);
-    setShowNotification(false);
   };
 
-  const resendCode = () => {
-    generateCode();
+  const handleLoginSuccess = () => {
+    setScreen(AppScreen.PROFILE);
   };
 
   const handleSurveyComplete = (answers: Record<string, any>, selectedDate: string) => {
@@ -257,7 +242,10 @@ const App: React.FC = () => {
 
                         <div className="space-y-6 text-center pt-4">
                           <p className="text-xs font-sans text-white">
-                            Already have an account? <button className="text-white font-black hover:underline transition-all">Sign In</button>
+                            Already have an account?{' '}
+                            <button onClick={() => setScreen(AppScreen.LOGIN)} className="text-white font-black hover:underline transition-all">
+                              Sign In
+                            </button>
                           </p>
                           <Tagline />
                         </div>
@@ -267,9 +255,27 @@ const App: React.FC = () => {
           </div>
         );
       case AppScreen.SIGNUP:
-        return <SignUp onSignUp={handleSignUp} />;
+        return <SignUp onSignUp={handleSignUp} onSwitchToLogin={() => setScreen(AppScreen.LOGIN)} />;
+      case AppScreen.LOGIN:
+        return (
+          <div className="min-h-screen bg-brand-purple flex flex-col items-center justify-center p-8">
+            <div className="w-full max-w-md space-y-8">
+              <div className="text-center">
+                <Logo variant="full" size="md" color="pink" />
+              </div>
+              <LoginForm
+                onSuccess={handleLoginSuccess}
+                onSwitchToSignup={() => setScreen(AppScreen.SIGNUP)}
+                onNeedsEmailVerification={(email) => {
+                  setProfile(prev => ({ ...prev, email }));
+                  setScreen(AppScreen.VERIFY_EMAIL);
+                }}
+              />
+            </div>
+          </div>
+        );
       case AppScreen.VERIFY_EMAIL:
-        return <EmailVerification email={profile.email} correctCode={verificationCode} onVerified={handleVerified} onResend={resendCode} />;
+        return <EmailVerification email={profile.email} onVerified={handleVerified} onResend={() => {}} />;
       case AppScreen.PROFILE:
         return (
           <Profile 
@@ -346,7 +352,8 @@ const App: React.FC = () => {
 
   const noLayoutScreens = [
     AppScreen.ONBOARDING, 
-    AppScreen.SIGNUP, 
+    AppScreen.SIGNUP,
+    AppScreen.LOGIN,
     AppScreen.VERIFY_EMAIL, 
     AppScreen.HOW_IT_WORKS, 
     AppScreen.WHAT_IS_WISE, 
@@ -360,22 +367,6 @@ const App: React.FC = () => {
 
   return (
     <div className={`relative min-h-[900px] h-auto ${isDarkScreen ? 'bg-brand-purple' : 'bg-white'} max-w-md mx-auto overflow-hidden shadow-2xl transition-colors duration-500`}>
-      {showNotification && (
-        <div className="absolute top-6 left-6 right-6 z-[100] animate-in slide-in-from-top-10 duration-500">
-          <div className="bg-white/95 backdrop-blur-3xl border border-brand-purple/10 p-6 rounded-[2rem] shadow-2xl flex items-center gap-5">
-            <div className="w-14 h-14 bg-brand-purple rounded-2xl flex items-center justify-center text-white shrink-0 shadow-lg">
-              <Logo variant="icon" size="sm" className="w-8 h-8" />
-            </div>
-            <div className="flex-1 overflow-hidden ml-2">
-              <p className="text-base font-sans font-black uppercase tracking-[0.25em] text-brand-purple/60">System Notification</p>
-              <p className="text-lg font-sans font-bold text-brand-purple leading-tight">WISE code: <span className="text-black font-black text-xl ml-2 tracking-widest">{verificationCode}</span></p>
-            </div>
-            <button onClick={() => setShowNotification(false)} className="p-2 text-brand-purple/40 hover:text-brand-purple transition-colors">
-              <ChevronRight size={26} className="rotate-90" />
-            </button>
-          </div>
-        </div>
-      )}
       {noLayoutScreens.includes(screen) ? renderScreen() : (
         <Layout currentScreen={screen} setScreen={setScreen}>
           {renderScreen()}

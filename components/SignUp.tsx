@@ -2,18 +2,21 @@ import React, { useState } from 'react';
 import { Logo } from './Logo';
 import { Tagline } from '../App';
 import { Mail, Lock, User, ChevronRight, ShieldCheck, Loader2, AlertCircle, Phone } from 'lucide-react';
+import authService from '../services/authService';
 
 interface SignUpProps {
   onSignUp: (name: string, email: string, phone: string) => void;
+  onSwitchToLogin?: () => void;
 }
 
-export const SignUp: React.FC<SignUpProps> = ({ onSignUp }) => {
+export const SignUp: React.FC<SignUpProps> = ({ onSignUp, onSwitchToLogin }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const formatPhoneNumber = (value: string) => {
     if (!value) return value;
@@ -31,15 +34,39 @@ export const SignUp: React.FC<SignUpProps> = ({ onSignUp }) => {
     setPhone(formattedPhoneNumber);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!agreed) return;
-    
+
+    setError('');
+
+    const passwordCheck = authService.validatePassword(password);
+    if (!passwordCheck.isValid) {
+      setError(passwordCheck.errors[0]);
+      return;
+    }
+
     setIsLoading(true);
-    setTimeout(() => {
+
+    try {
+      const result = await authService.signUp({
+        email,
+        password,
+        fullName: name,
+        phone: phone || undefined,
+      });
+
+      if (result.success) {
+        onSignUp(name, email, phone);
+      } else {
+        setError(result.error || 'Signup failed. Please try again.');
+      }
+    } catch (err) {
+      console.error('Signup error:', err);
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
       setIsLoading(false);
-      onSignUp(name, email, phone);
-    }, 1500);
+    }
   };
 
   return (
@@ -54,6 +81,13 @@ export const SignUp: React.FC<SignUpProps> = ({ onSignUp }) => {
         </header>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="bg-red-500/20 border border-red-400/30 rounded-2xl p-4 flex items-start gap-3">
+              <AlertCircle size={18} className="text-red-300 shrink-0 mt-0.5" />
+              <p className="text-sm text-red-200 font-medium">{error}</p>
+            </div>
+          )}
+
           <div className="space-y-2">
             <label className="text-[10px] font-sans font-black text-white uppercase tracking-widest ml-1">Full Name</label>
             <div className="relative group">
@@ -137,7 +171,10 @@ export const SignUp: React.FC<SignUpProps> = ({ onSignUp }) => {
 
         <div className="space-y-10 text-center">
           <p className="text-xs font-sans text-white">
-            Already have an account? <button className="text-white font-black hover:underline transition-all">Sign In</button>
+            Already have an account?{' '}
+            <button type="button" onClick={onSwitchToLogin} className="text-white font-black hover:underline transition-all">
+              Sign In
+            </button>
           </p>
           <Tagline />
         </div>
