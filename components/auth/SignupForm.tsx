@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { SignUp as ClerkSignUp } from '@clerk/clerk-react';
-import { clerkAppearance } from '../../clerkTheme';
+import { clerkAppearance } from '@/clerkTheme';
 
 interface SignupFormProps {
   onSuccess?: () => void;

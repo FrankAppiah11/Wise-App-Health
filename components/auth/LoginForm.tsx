@@ -1,6 +1,6 @@
 import React from 'react';
 import { SignIn } from '@clerk/clerk-react';
-import { clerkAppearance } from '../../clerkTheme';
+import { clerkAppearance } from '@/clerkTheme';
 
 interface LoginFormProps {
   onSuccess?: () => void;

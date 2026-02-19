@@ -2,7 +2,7 @@ import React from 'react';
 import { SignUp as ClerkSignUp } from '@clerk/clerk-react';
 import { Logo } from './Logo';
 import { Tagline } from '../App';
-import { clerkAppearance } from '../clerkTheme';
+import { clerkAppearance } from '@/clerkTheme';
 
 interface SignUpProps {
   onSignUp: () => void;
