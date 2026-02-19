@@ -1,8 +1,18 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { ClerkProvider } from '@clerk/clerk-react';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { AuthProvider } from './contexts/AuthContext';
+
+const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+if (!CLERK_PUBLISHABLE_KEY) {
+  throw new Error(
+    'Missing Clerk Publishable Key. ' +
+    'Please add VITE_CLERK_PUBLISHABLE_KEY to your .env.local file. ' +
+    'Get it from: https://dashboard.clerk.com → Your App → API Keys'
+  );
+}
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -13,9 +23,9 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <ErrorBoundary>
-      <AuthProvider>
+      <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
         <App />
-      </AuthProvider>
+      </ClerkProvider>
     </ErrorBoundary>
   </React.StrictMode>
 );

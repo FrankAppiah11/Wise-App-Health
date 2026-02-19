@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useUser } from '@clerk/clerk-react';
 import { Layout } from './components/Layout';
 import { Profile } from './components/Profile';
 import { Survey } from './components/Survey';
@@ -7,7 +8,6 @@ import { Tracker } from './components/Tracker';
 import { Support } from './components/Support';
 import { AdminDashboard } from './components/AdminDashboard';
 import { SignUp } from './components/SignUp';
-import { EmailVerification } from './components/EmailVerification';
 import { LoginForm } from './components/auth/LoginForm';
 import { Membership } from './components/Membership';
 import { Logo } from './components/Logo';
@@ -49,6 +49,7 @@ export const Tagline = ({ className = "" }: { className?: string }) => (
 );
 
 const App: React.FC = () => {
+  const { isSignedIn, isLoaded, user } = useUser();
   const [screen, setScreen] = useState<AppScreen>(AppScreen.ONBOARDING);
   const [profile, setProfile] = useState<UserProfile>(INITIAL_PROFILE);
   const [profileId, setProfileId] = useState<string | null>(null);
@@ -74,17 +75,27 @@ const App: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (isLoaded && isSignedIn && user) {
+      setProfile(prev => ({
+        ...prev,
+        name: user.fullName || prev.name,
+        email: user.primaryEmailAddress?.emailAddress || prev.email,
+        phone: user.primaryPhoneNumber?.phoneNumber || prev.phone,
+      }));
+      if (screen === AppScreen.SIGNUP || screen === AppScreen.LOGIN || screen === AppScreen.ONBOARDING) {
+        setScreen(AppScreen.PROFILE);
+      }
+    }
+  }, [isSignedIn, isLoaded, user]);
+
   const handleUpdateProfile = (updates: Partial<UserProfile>) => {
     setProfile(prev => ({ ...prev, ...updates }));
   };
 
-  const handleSignUp = (name: string, email: string, phone: string) => {
-    setProfile(prev => ({ ...prev, name, email, phone }));
-    setScreen(AppScreen.VERIFY_EMAIL);
-  };
-
-  const handleVerified = () => {
-    setScreen(AppScreen.PROFILE);
+  const handleSignUp = () => {
+    // Clerk handles the full signup + verification flow.
+    // This callback is no longer needed but kept for interface compatibility.
   };
 
   const handleLoginSuccess = () => {
@@ -266,16 +277,10 @@ const App: React.FC = () => {
               <LoginForm
                 onSuccess={handleLoginSuccess}
                 onSwitchToSignup={() => setScreen(AppScreen.SIGNUP)}
-                onNeedsEmailVerification={(email) => {
-                  setProfile(prev => ({ ...prev, email }));
-                  setScreen(AppScreen.VERIFY_EMAIL);
-                }}
               />
             </div>
           </div>
         );
-      case AppScreen.VERIFY_EMAIL:
-        return <EmailVerification email={profile.email} onVerified={handleVerified} onResend={() => {}} />;
       case AppScreen.PROFILE:
         return (
           <Profile 
@@ -354,7 +359,6 @@ const App: React.FC = () => {
     AppScreen.ONBOARDING, 
     AppScreen.SIGNUP,
     AppScreen.LOGIN,
-    AppScreen.VERIFY_EMAIL, 
     AppScreen.HOW_IT_WORKS, 
     AppScreen.WHAT_IS_WISE, 
     AppScreen.ADMIN, 

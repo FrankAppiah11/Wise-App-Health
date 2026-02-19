@@ -44,9 +44,13 @@ export const Support: React.FC = () => {
     setIsTyping(true);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+      const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.API_KEY;
+      if (!apiKey) {
+        throw new Error('Gemini API key is not configured. Add VITE_GEMINI_API_KEY to your .env.local file.');
+      }
+      const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-2.0-flash',
         contents: [{ role: 'user', parts: [{ text: textToSubmit }] }],
         config: {
           systemInstruction: `You are a supportive, medically-informed AI assistant for WISE (Women Informed Strong Engaged). You provide evidence-based guidance on reproductive health, cycle tracking, and gynecological symptoms. Your tone is professional yet empathetic, following Dr. Leslie Appiah's standards. Always recommend consulting a physician for specific medical concerns. Keep responses concise and empowering.`,
@@ -54,8 +58,10 @@ export const Support: React.FC = () => {
         },
       });
       setMessages(prev => [...prev, { role: 'ai', text: response.text || "I'm sorry, I couldn't process that." }]);
-    } catch (error) {
-      setMessages(prev => [...prev, { role: 'error', text: "Service connection error. Please try again." }]);
+    } catch (error: any) {
+      console.error('AI Guide error:', error);
+      const msg = error?.message || 'Service connection error. Please try again.';
+      setMessages(prev => [...prev, { role: 'error', text: msg }]);
     } finally {
       setIsTyping(false);
     }
